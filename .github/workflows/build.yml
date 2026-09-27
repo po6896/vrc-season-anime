@@ -1,13 +1,16 @@
 name: build
 on:
   schedule:
-    - cron: "0 20 * * 0"      # 毎週月曜 05:00 JST
-    - cron: "0 15 1 1,4,7,10 *" # 季節の変わり目 (各月 1 日 00:00 JST) にも更新
+    - cron: "7 18 * * 0"       # 毎週月曜 03:07 JST。毎時 0 分は混んで遅れるのでずらす
+    # 季節の変わり目 (1/4/7/10 月 1 日 03:07 JST) にも更新。UTC では前月末日になる
+    - cron: "7 18 31 12,3 *"
+    - cron: "7 18 30 6,9 *"
   workflow_dispatch:
 permissions:
   contents: read
   pages: write
   id-token: write
+  actions: write  # 下の keepalive 用
 concurrency:
   group: pages
   cancel-in-progress: false
@@ -31,3 +34,7 @@ jobs:
           path: site
       - id: deploy
         uses: actions/deploy-pages@v4
+      # 公開リポジトリは 60 日コミットが無いと定期実行が止まる。有効化 API を叩いて期限を延ばす
+      - run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/build.yml/enable"
+        env:
+          GH_TOKEN: ${{ github.token }}
