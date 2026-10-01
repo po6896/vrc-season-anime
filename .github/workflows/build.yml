@@ -29,6 +29,7 @@ jobs:
       - run: python build.py
         env:
           TZ: Asia/Tokyo
+      - run: cp music.json site/music.json
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site
